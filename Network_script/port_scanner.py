@@ -1,13 +1,13 @@
-## Port Scanner Script ##
 import socket
 import threading
+import argparse
 
 def scan_port(ip, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(1)
     result = sock.connect_ex((ip, port))
     if result == 0:
-        print(f"Port {port} is open on {ip}, ready to fuck it up.")
+        print(f"[+] Port {port} is open on {ip}")
     sock.close()
 
 def scan_range(ip, start_port, end_port):
@@ -20,6 +20,10 @@ def scan_range(ip, start_port, end_port):
         t.join()
 
 if __name__ == "__main__":
-    target ="Enter your target ip address"  # Replace with your target
-    scan_range(target, 1, 1000)
-## End Port Scanner Script ##
+    parser = argparse.ArgumentParser(description="Simple TCP Port Scanner")
+    parser.add_argument("target", help="Target IP address")
+    parser.add_argument("--start", type=int, default=1, help="Start port (default: 1)")
+    parser.add_argument("--end", type=int, default=1000, help="End port (default: 1000)")
+    args = parser.parse_args()
+
+    scan_range(args.target, args.start, args.end)
