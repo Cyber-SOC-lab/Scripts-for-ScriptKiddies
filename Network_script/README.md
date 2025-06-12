@@ -43,3 +43,26 @@ sudo python3 sniffer.py --host <host_ip>
 ```
 If you leave --host blank, it will sniff on all available interfaces.
 
+
+### 🔎 3. 'ICMP Host Discovery (udp_icmp_scanner.py)'
+
+A stealthy ICMP-based network scanner that uses UDP packets and listens for ICMP Type 3 Code 3 responses to detect live hosts within a subnet.
+
+#### 📦 Features:
+- Sends crafted UDP packets with a "magic message"
+- Sniffs ICMP replies to detect live hosts
+- Works cross-platform (Windows & Linux)
+- Useful for environments where ping (ICMP Echo) is blocked
+
+#### ⚠️ Requirements:
+- Run as administrator/root
+- Python 3.6+
+- Python package: netaddr
+
+#### 🚀 Usage:
+```bash
+python3 icmp_host_discovery.py --ip <your_host_ip> --subnet <target_subnet> [--magic <custom_magic_message>]
+```
+
+#### 🔧 Example:
+- python3 icmp_host_discovery.py --ip 192.168.1.100 --subnet 192.168.1.0/24
