@@ -1,32 +1,45 @@
 # 🌐 Network Tools
 
-This directory contains Python-based tools for basic network tasks such as port scanning and packet sniffing. These tools are designed for **educational and internal testing purposes only**.
+This directory contains basic Python-based network utilities developed for educational and ethical testing purposes.
 
-> ⚠️ Running these tools on networks you don't own or without explicit permission is **illegal and unethical**. Use responsibly.
+> ⚠️ **Disclaimer:** These tools are intended for use in controlled environments only. Unauthorized use on public or private networks without explicit permission is strictly prohibited.
 
 ---
 
-## 🔍 Tools Included
+## 📁 Tools Included
 
-### 1. `port_scanner.py`
+### 🔎 1. `port_scanner.py`
 
-A multi-threaded TCP port scanner that checks for open ports on a target host.
+A raw socket packet sniffer that captures and decodes IP headers from incoming packets.
 
-- ✅ Uses `socket` and `threading` libraries.
-- ✅ Scans a range of ports quickly using parallel threads.
+#### ✅ Features:
+- Fast scanning using threads
+- Customizable port ranges
+- Simple and portable code
 
-**Usage**
 
+#### 🚀 Usage:
 ```bash
-**Usage of post_scanner:**
-
-python3 port_scanner.py 192.168.1.10 --start 20 --end 100
-
-
-**Usage of sniffer:**
-
-sudo python3 sniffer.py --host 192.168.1.5
+python3 port_scanner.py <target_ip> --start <start_port> --end <end_port>
+```
 
 
+#### 🔎 2. `sniffer.py`
 
+A simple multi-threaded TCP port scanner that checks for open ports on a target host.
+
+#### ✅ Features:
+- Captures raw network packets
+- Extracts and prints the protocol, source, and destination IPs
+- Cross-platform support (Linux, Windows)
+
+#### ⚠️ Requirements:
+- Must be run with root/admin privileges.
+- On Windows, it enables promiscuous mode automatically.
+
+#### 🚀 Usage:
+```bash
+sudo python3 sniffer.py --host <host_ip>
+```
+If you leave --host blank, it will sniff on all available interfaces.
 
