@@ -1,12 +1,9 @@
 import os
 import socket
 import struct
+import argparse
 from ctypes import *
 
-# host to listen (optional - can be left blank for all interfaces)
-host = input("Enter your host IP addr: ") or "" 
-
-# IP header
 class IP(Structure):
     _fields_ = [
         ("ihl", c_ubyte, 4),
@@ -27,53 +24,41 @@ class IP(Structure):
 
     def __init__(self, socket_buffer=None):
         self.protocol_map = {1: "ICMP", 6: "TCP", 17: "UDP"}
-
-        # Human-readable IP addresses
-        self.src_address = socket.inet_ntoa(struct.pack("!I" , self.src))
+        self.src_address = socket.inet_ntoa(struct.pack("!I", self.src))
         self.dst_address = socket.inet_ntoa(struct.pack("!I", self.dst))
+        self.protocol = self.protocol_map.get(self.protocol_num, str(self.protocol_num))
 
-        # Human-readable protocol
-        try:
-            self.protocol = self.protocol_map[self.protocol_num]
-        except KeyError:
-            self.protocol = str(self.protocol_num) 
+def main(host):
+    if os.name == 'nt':
+        socket_protocol = socket.IPPROTO_IP
+    else:
+        socket_protocol = socket.IPPROTO_ICMP
 
-# Create a raw socket and bind it 
-if os.name == 'nt':
-    socket_protocol = socket.IPPROTO_IP
-else:
-    socket_protocol = socket.IPPROTO_ICMP
+    sniffer = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket_protocol)
+    sniffer.bind((host, 0))
+    sniffer.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
 
-sniffer = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket_protocol)
+    if os.name == 'nt':
+        sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
 
-# Bind to the specified host (or all interfaces if host is empty)
-sniffer.bind((host, 0)) 
+    print(f"[+] Sniffing started on {host or 'all interfaces'}... Press Ctrl+C to stop.\n")
 
-# We want the IP headers included in the capture
-sniffer.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+    try:
+        while True:
+            raw_buffer = sniffer.recvfrom(65535)[0]
+            if len(raw_buffer) >= 32:
+                ip_header = IP(raw_buffer[:32])
+                print(f"[{ip_header.protocol}] {ip_header.src_address} -> {ip_header.dst_address}")
+            else:
+                print("[-] Packet too small to parse.")
+    except KeyboardInterrupt:
+        if os.name == 'nt':
+            sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
+        print("\n[+] Sniffing stopped. Exiting.")
 
-# If you are using Windows, enable promiscuous mode
-if os.name == "nt":
-    sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Simple Packet Sniffer")
+    parser.add_argument("--host", default="", help="Host IP to bind (default: all interfaces)")
+    args = parser.parse_args()
 
-try:
-    while True:
-        # Read in a single packet
-        raw_buffer = sniffer.recvfrom(65535)[0] 
-
-        packet_size = len(raw_buffer)
-        print(f"Recieved packet of size: {packet_size} bytes")
-
-        if packet_size >= 32:
-        
-             # Create IP header from first 32 bytes of buffer
-            ip_header = IP(raw_buffer[:32])
-               # Print the detected protocol and the hosts
-            print(f"Protocol: {ip_header.protocol} {ip_header.src_address} -> {ip_header.dst_address}")
-        else:
-            print("Packet too small to parse IP header")
-
-except KeyboardInterrupt:
-    if os.name == "nt":
-        sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
-    print("\nExiting...")
+    main(args.host)
