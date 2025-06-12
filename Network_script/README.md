@@ -44,7 +44,7 @@ sudo python3 sniffer.py --host <host_ip>
 If you leave --host blank, it will sniff on all available interfaces.
 
 
-### 🔎 3. 'ICMP Host Discovery (udp_icmp_scanner.py)'
+### 🔎 3. ICMP Host Discovery (udp_icmp_scanner.py)
 
 A stealthy ICMP-based network scanner that uses UDP packets and listens for ICMP Type 3 Code 3 responses to detect live hosts within a subnet.
 
